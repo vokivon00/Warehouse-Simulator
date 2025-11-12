@@ -34,4 +34,8 @@ public class Warehouse {
     public List<Product> getAllProducts() {
         return new ArrayList<>(products.values());
     }
+
+    public boolean removeProduct(String id) {
+        return products.remove(id) != null;
+    }
 }

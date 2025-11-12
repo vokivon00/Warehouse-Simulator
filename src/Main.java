@@ -23,6 +23,8 @@ public class Main {
                     showAllProducts();
                     break;
                 case 3:
+                    deleteProduct();
+                    break;
                 case 4:
                     System.out.println("Функція в розробці.");
                     break;
@@ -81,6 +83,33 @@ public class Main {
             for (Product p : products) {
                 System.out.println(p);
             }
+        }
+    }
+
+    private static void deleteProduct() {
+        System.out.println("\n--- Видалення товару ---");
+
+        System.out.print("Введіть артикул товару для видалення: ");
+        String id = scanner.nextLine();
+
+        Product product = warehouse.findProductById(id);
+        if (product == null) {
+            System.out.println("Товар з артикулом '" + id + "' не знайдено.");
+            return;
+        }
+
+        System.out.println("Знайдено товар: " + product);
+        System.out.print("Підтвердіть видалення (так/ні): ");
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+
+        if (confirmation.equals("так") || confirmation.equals("yes")) {
+            if (warehouse.removeProduct(id)) {
+                System.out.println("Товар успішно видалено!");
+            } else {
+                System.out.println("Помилка при видаленні товару.");
+            }
+        } else {
+            System.out.println("Видалення скасовано.");
         }
     }
 }
