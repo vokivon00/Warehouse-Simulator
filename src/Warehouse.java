@@ -1,4 +1,3 @@
-// Warehouse.java
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,5 +36,18 @@ public class Warehouse {
 
     public boolean removeProduct(String id) {
         return products.remove(id) != null;
+    }
+
+    public List<Product> search(String query) {
+        List<Product> result = new ArrayList<>();
+        String lowerQuery = query.toLowerCase();
+
+        for (Product product : products.values()) {
+            if (product.getId().toLowerCase().contains(lowerQuery) ||
+                    product.getName().toLowerCase().contains(lowerQuery)) {
+                result.add(product);
+            }
+        }
+        return result;
     }
 }
