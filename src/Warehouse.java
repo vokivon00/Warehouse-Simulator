@@ -50,4 +50,11 @@ public class Warehouse {
         }
         return result;
     }
+
+    public void loadProducts(List<Product> newProducts) {
+        products.clear();
+        for (Product product : newProducts) {
+            products.put(product.getId(), product);
+        }
+    }
 }

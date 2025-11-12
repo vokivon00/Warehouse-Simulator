@@ -4,17 +4,22 @@ import java.util.Scanner;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static final Warehouse warehouse = Warehouse.getInstance();
+    private static final String FILE_PATH = "warehouse_data.csv";
 
     public static void main(String[] args) {
         System.out.println("=== Склад v1.0 ===");
+
+        List<Product> loadedProducts = DataManager.loadData(FILE_PATH);
+        warehouse.loadProducts(loadedProducts);
 
         boolean isRunning = true;
         while (isRunning) {
             printMenu();
             System.out.print("Виберіть пункт: ");
 
-            // Пока без валидации (будет в Коммите 6)
-            int choice = Integer.parseInt(scanner.nextLine());
+            String input = scanner.nextLine();
+            if (input.isEmpty()) continue;
+            int choice = Integer.parseInt(input);
 
             switch (choice) {
                 case 1:
@@ -33,8 +38,11 @@ public class Main {
                     searchProduct();
                     break;
                 case 6:
+                    System.out.println("Збереження даних...");
+                    DataManager.saveData(warehouse.getAllProducts(), FILE_PATH);
+
                     isRunning = false;
-                    System.out.println("Вихід.");
+                    System.out.println("Вихід. До побачення!");
                     break;
                 default:
                     System.out.println("Невірний пункт меню.");
@@ -50,8 +58,8 @@ public class Main {
         System.out.println("2. Показати всі товари");
         System.out.println("3. Видалити товар");
         System.out.println("4. Оновити товар");
-        System.out.println("5. Пошук товару"); // ДОБАВЛЕНО
-        System.out.println("6. Вихід");         // ИЗМЕНЕНО
+        System.out.println("5. Пошук товару");
+        System.out.println("6. Вихід (Зберегти дані)"); // Обновлен текст
     }
 
     private static void addNewProduct() {
