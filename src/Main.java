@@ -26,7 +26,7 @@ public class Main {
                     deleteProduct();
                     break;
                 case 4:
-                    System.out.println("Функція в розробці.");
+                    updateProduct();
                     break;
                 case 5:
                     isRunning = false;
@@ -111,5 +111,44 @@ public class Main {
         } else {
             System.out.println("Видалення скасовано.");
         }
+    }
+
+    private static void updateProduct() {
+        System.out.println("\n--- Оновлення товару ---");
+
+        System.out.print("Введіть артикул товару для оновлення: ");
+        String id = scanner.nextLine();
+
+        Product product = warehouse.findProductById(id);
+        if (product == null) {
+            System.out.println("Товар з артикулом '" + id + "' не знайдено.");
+            return;
+        }
+
+        System.out.println("Поточні дані товару: " + product);
+        System.out.println("\nВведіть нові значення (або натисніть Enter для пропуску):");
+
+        System.out.print("Нова назва [" + product.getName() + "]: ");
+        String newName = scanner.nextLine().trim();
+        if (!newName.isEmpty()) {
+            product.setName(newName);
+        }
+
+        System.out.print("Нова ціна [" + product.getPrice() + "]: ");
+        String newPriceStr = scanner.nextLine().trim();
+        if (!newPriceStr.isEmpty()) {
+            double newPrice = Double.parseDouble(newPriceStr);
+            product.setPrice(newPrice);
+        }
+
+        System.out.print("Нова кількість [" + product.getQuantity() + "]: ");
+        String newQuantityStr = scanner.nextLine().trim();
+        if (!newQuantityStr.isEmpty()) {
+            int newQuantity = Integer.parseInt(newQuantityStr);
+            product.setQuantity(newQuantity);
+        }
+
+        System.out.println("Товар успішно оновлено!");
+        System.out.println("Оновлені дані: " + product);
     }
 }

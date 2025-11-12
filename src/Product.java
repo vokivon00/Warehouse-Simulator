@@ -22,7 +22,7 @@ public class Product {
 
     @Override
     public String toString() {
-        return String.format("Артикул: %s, Название: %s, Цена: %.2f, Кол-во: %d",
+        return String.format("Артикул: %s, Назва: %s, Ціна: %.2f, Кількість: %d",
                 id, name, price, quantity);
     }
 }
