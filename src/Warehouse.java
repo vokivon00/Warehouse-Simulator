@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator; // ВАЖНО: Добавлен импорт
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,5 +57,23 @@ public class Warehouse {
         for (Product product : newProducts) {
             products.put(product.getId(), product);
         }
+    }
+
+    public List<Product> sortByName() {
+        List<Product> list = new ArrayList<>(products.values());
+        list.sort(Comparator.comparing(p -> p.getName().toLowerCase()));
+        return list;
+    }
+
+    public List<Product> sortByPrice() {
+        List<Product> list = new ArrayList<>(products.values());
+        list.sort(Comparator.comparingDouble(Product::getPrice));
+        return list;
+    }
+
+    public List<Product> sortByQuantity() {
+        List<Product> list = new ArrayList<>(products.values());
+        list.sort(Comparator.comparingInt(Product::getQuantity));
+        return list;
     }
 }

@@ -4,13 +4,14 @@ import java.util.Scanner;
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static final Warehouse warehouse = Warehouse.getInstance();
-    private static final String FILE_PATH = "warehouse_data.csv";
+    private static final String DATA_FILE = "warehouse_data.csv";
 
     public static void main(String[] args) {
         System.out.println("=== Склад v1.0 ===");
 
-        List<Product> loadedProducts = DataManager.loadData(FILE_PATH);
-        warehouse.loadProducts(loadedProducts);
+        // Завантаження даних
+        List<Product> savedProducts = DataManager.loadData(DATA_FILE);
+        warehouse.loadProducts(savedProducts);
 
         boolean isRunning = true;
         while (isRunning) {
@@ -19,6 +20,7 @@ public class Main {
 
             String input = scanner.nextLine();
             if (input.isEmpty()) continue;
+
             int choice = Integer.parseInt(input);
 
             switch (choice) {
@@ -38,11 +40,13 @@ public class Main {
                     searchProduct();
                     break;
                 case 6:
-                    System.out.println("Збереження даних...");
-                    DataManager.saveData(warehouse.getAllProducts(), FILE_PATH);
-
+                    sortProducts();
+                    break;
+                case 7:
                     isRunning = false;
-                    System.out.println("Вихід. До побачення!");
+                    System.out.println("Збереження даних...");
+                    DataManager.saveData(warehouse.getAllProducts(), DATA_FILE);
+                    System.out.println("Вихід.");
                     break;
                 default:
                     System.out.println("Невірний пункт меню.");
@@ -59,7 +63,8 @@ public class Main {
         System.out.println("3. Видалити товар");
         System.out.println("4. Оновити товар");
         System.out.println("5. Пошук товару");
-        System.out.println("6. Вихід (Зберегти дані)"); // Обновлен текст
+        System.out.println("6. Сортувати товари");
+        System.out.println("7. Вихід");
     }
 
     private static void addNewProduct() {
@@ -97,17 +102,14 @@ public class Main {
         System.out.println("\n--- Видалення товару ---");
         System.out.print("Введіть артикул товару для видалення: ");
         String id = scanner.nextLine();
-
         Product product = warehouse.findProductById(id);
         if (product == null) {
             System.out.println("Товар з артикулом '" + id + "' не знайдено.");
             return;
         }
-
         System.out.println("Знайдено товар: " + product);
         System.out.print("Підтвердіть видалення (так/ні): ");
         String confirmation = scanner.nextLine().trim().toLowerCase();
-
         if (confirmation.equals("так") || confirmation.equals("yes")) {
             if (warehouse.removeProduct(id)) {
                 System.out.println("Товар успішно видалено!");
@@ -123,28 +125,22 @@ public class Main {
         System.out.println("\n--- Оновлення товару ---");
         System.out.print("Введіть артикул товару для оновлення: ");
         String id = scanner.nextLine();
-
         Product product = warehouse.findProductById(id);
         if (product == null) {
             System.out.println("Товар з артикулом '" + id + "' не знайдено.");
             return;
         }
-
         System.out.println("Поточні дані товару: " + product);
         System.out.println("\nВведіть нові значення (або натисніть Enter для пропуску):");
-
         System.out.print("Нова назва [" + product.getName() + "]: ");
         String newName = scanner.nextLine().trim();
         if (!newName.isEmpty()) product.setName(newName);
-
         System.out.print("Нова ціна [" + product.getPrice() + "]: ");
         String newPriceStr = scanner.nextLine().trim();
         if (!newPriceStr.isEmpty()) product.setPrice(Double.parseDouble(newPriceStr));
-
         System.out.print("Нова кількість [" + product.getQuantity() + "]: ");
         String newQuantityStr = scanner.nextLine().trim();
         if (!newQuantityStr.isEmpty()) product.setQuantity(Integer.parseInt(newQuantityStr));
-
         System.out.println("Товар успішно оновлено!");
         System.out.println("Оновлені дані: " + product);
     }
@@ -153,19 +149,56 @@ public class Main {
         System.out.println("\n--- Пошук товару ---");
         System.out.print("Введіть артикул або частину назви: ");
         String query = scanner.nextLine().trim();
-
         if (query.isEmpty()) {
             System.out.println("Пошуковий запит порожній.");
             return;
         }
-
         List<Product> foundProducts = warehouse.search(query);
-
         if (foundProducts.isEmpty()) {
             System.out.println("Нічого не знайдено.");
         } else {
             System.out.println("Знайдено товарів: " + foundProducts.size());
             for (Product p : foundProducts) {
+                System.out.println(p);
+            }
+        }
+    }
+
+    private static void sortProducts() {
+        System.out.println("\n--- Сортування товарів ---");
+        System.out.println("1. За назвою (А-Я)");
+        System.out.println("2. За ціною (зростання)");
+        System.out.println("3. За кількістю (зростання)");
+        System.out.print("Оберіть критерій: ");
+
+        String input = scanner.nextLine();
+        if (input.isEmpty()) return;
+        int criterion = Integer.parseInt(input);
+
+        List<Product> sortedList;
+
+        switch (criterion) {
+            case 1:
+                sortedList = warehouse.sortByName();
+                System.out.println("--- Сортування за назвою ---");
+                break;
+            case 2:
+                sortedList = warehouse.sortByPrice();
+                System.out.println("--- Сортування за ціною ---");
+                break;
+            case 3:
+                sortedList = warehouse.sortByQuantity();
+                System.out.println("--- Сортування за кількістю ---");
+                break;
+            default:
+                System.out.println("Невірний критерій.");
+                return;
+        }
+
+        if (sortedList.isEmpty()) {
+            System.out.println("Список порожній.");
+        } else {
+            for (Product p : sortedList) {
                 System.out.println(p);
             }
         }
