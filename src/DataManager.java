@@ -7,8 +7,9 @@ public class DataManager {
 
     /**
      * Зберігає список товарів у файл CSV.
+     * Може "кинути" IOException, якщо виникне помилка запису.
      */
-    public static void saveData(List<Product> products, String filePath) {
+    public static void saveData(List<Product> products, String filePath) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             writer.write("id,name,price,quantity");
             writer.newLine();
@@ -22,16 +23,22 @@ public class DataManager {
                 writer.write(line);
                 writer.newLine();
             }
+            // Повідомлення про успіх тепер краще перенести до Main,
+            // але поки залишимо тут для простоти.
             System.out.println("Дані успішно збережено у файл: " + filePath);
         } catch (IOException e) {
+            // Замість того, щоб просто видрукувати помилку,
+            // ми "прокидаємо" її тому, хто викликав цей метод.
             System.err.println("Помилка при збереженні даних: " + e.getMessage());
+            throw e;
         }
     }
 
     /**
      * Завантажує список товарів з файлу CSV.
+     * Може "кинути" IOException, якщо виникне помилка читання.
      */
-    public static List<Product> loadData(String filePath) {
+    public static List<Product> loadData(String filePath) throws IOException {
         List<Product> products = new ArrayList<>();
         File file = new File(filePath);
 
@@ -63,6 +70,7 @@ public class DataManager {
             System.out.println("Завантажено товарів: " + products.size());
         } catch (IOException e) {
             System.err.println("Помилка при завантаженні даних: " + e.getMessage());
+            throw e;
         }
         return products;
     }

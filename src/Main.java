@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -9,8 +11,16 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== Склад v1.0 ===");
 
-        List<Product> savedProducts = DataManager.loadData(DATA_FILE);
-        warehouse.loadProducts(savedProducts);
+        List<Product> savedProducts;
+        try {
+            savedProducts = DataManager.loadData(DATA_FILE);
+            warehouse.loadProducts(savedProducts);
+        } catch (IOException e) {
+            System.out.println("!!! Критична помилка завантаження даних.");
+            System.out.println("!!! Роботу буде продовжено з порожнім складом.");
+            savedProducts = new ArrayList<>();
+            warehouse.loadProducts(savedProducts);
+        }
 
         boolean isRunning = true;
         while (isRunning) {
@@ -27,8 +37,13 @@ public class Main {
                 case 6: sortProducts(); break;
                 case 7:
                     isRunning = false;
-                    DataManager.saveData(warehouse.getAllProducts(), DATA_FILE);
-                    System.out.println("Вихід.");
+                    try {
+                        DataManager.saveData(warehouse.getAllProducts(), DATA_FILE);
+                        System.out.println("Дані збережено. Вихід.");
+                    } catch (IOException e) {
+                        System.out.println("!!! КРИТИЧНА ПОМИЛКА ЗБЕРЕЖЕННЯ ДАНИХ.");
+                        System.out.println("!!! Ваші зміни можуть бути втрачені.");
+                    }
                     break;
                 default:
                     System.out.println("Невірний пункт меню.");
@@ -141,7 +156,6 @@ public class Main {
     }
 
     private static void searchProduct() {
-        // ВАЛИДАЦИЯ
         String query = InputValidator.readNonEmptyString(scanner, "Пошук (артикул/назва): ");
         List<Product> res = warehouse.search(query);
         if(res.isEmpty()) System.out.println("Нічого не знайдено.");
