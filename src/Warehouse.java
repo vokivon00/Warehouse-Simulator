@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Comparator; // Імпорт компаратора
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,28 +59,9 @@ public class Warehouse {
         }
     }
 
-    // Методы сортировки
-    public List<Product> sortByName() {
+    public List<Product> getSortedProducts(Comparator<Product> comparator) {
         List<Product> list = new ArrayList<>(products.values());
-        list.sort(Comparator.comparing(p -> p.getName().toLowerCase()));
-        return list;
-    }
-
-    public List<Product> sortByPrice() {
-        List<Product> list = new ArrayList<>(products.values());
-        list.sort(Comparator.comparingDouble(Product::getPrice));
-        return list;
-    }
-
-    public List<Product> sortByQuantity() {
-        List<Product> list = new ArrayList<>(products.values());
-        list.sort(Comparator.comparingInt(Product::getQuantity));
-        return list;
-    }
-
-    public List<Product> sortById() {
-        List<Product> list = new ArrayList<>(products.values());
-        list.sort(Comparator.comparing(Product::getId));
+        list.sort(comparator);
         return list;
     }
 }

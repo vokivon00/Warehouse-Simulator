@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -170,16 +171,30 @@ public class Main {
         System.out.println("4. За артикулом");
 
         int criterion = InputValidator.readInt(scanner, "Оберіть критерій: ");
-        List<Product> sorted = null;
+
+        Comparator<Product> comparator = null; // Cтворюємо змінну для компаратора
 
         switch (criterion) {
-            case 1: sorted = warehouse.sortByPrice(); break;
-            case 2: sorted = warehouse.sortByQuantity(); break;
-            case 3: sorted = warehouse.sortByName(); break;
-            case 4: sorted = warehouse.sortById(); break;
-            default: System.out.println("Невірний критерій."); return;
+            case 1:
+                comparator = Comparator.comparingDouble(Product::getPrice);
+                break;
+            case 2:
+                comparator = Comparator.comparingInt(Product::getQuantity);
+                break;
+            case 3:
+                comparator = Comparator.comparing(p -> p.getName().toLowerCase());
+                break;
+            case 4:
+                comparator = Comparator.comparing(Product::getId);
+                break;
+            default:
+                System.out.println("Невірний критерій.");
+                return;
         }
 
-        if (sorted != null) sorted.forEach(System.out::println);
+        // Викликаємо єдиний метод сортування
+        List<Product> sorted = warehouse.getSortedProducts(comparator);
+
+        sorted.forEach(System.out::println);
     }
 }
