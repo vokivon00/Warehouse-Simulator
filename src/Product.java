@@ -1,5 +1,4 @@
 public abstract class Product {
-    // 2. ІНКАПСУЛЯЦІЯ: Поля залишаються приватними
     private String id;
     private String name;
     private double price;
