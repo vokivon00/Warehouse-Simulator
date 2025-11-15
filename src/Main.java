@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -10,23 +11,12 @@ public class Main {
     private static final String DATA_FILE = "warehouse_data.csv";
 
     public static void main(String[] args) {
-        System.out.println("=== Склад v1.0 ===");
-
-        List<Product> savedProducts;
-        try {
-            savedProducts = DataManager.loadData(DATA_FILE);
-            warehouse.loadProducts(savedProducts);
-        } catch (IOException e) {
-            System.out.println("!!! Критична помилка завантаження даних.");
-            System.out.println("!!! Роботу буде продовжено з порожнім складом.");
-            savedProducts = new ArrayList<>();
-            warehouse.loadProducts(savedProducts);
-        }
+        System.out.println("=== Склад v2.0 (OOP) ===");
+        loadData(); // Завантаження даних на старті
 
         boolean isRunning = true;
         while (isRunning) {
             printMenu();
-
             int choice = InputValidator.readInt(scanner, "Виберіть пункт: ");
 
             switch (choice) {
@@ -38,13 +28,7 @@ public class Main {
                 case 6: sortProducts(); break;
                 case 7:
                     isRunning = false;
-                    try {
-                        DataManager.saveData(warehouse.getAllProducts(), DATA_FILE);
-                        System.out.println("Дані збережено. Вихід.");
-                    } catch (IOException e) {
-                        System.out.println("!!! КРИТИЧНА ПОМИЛКА ЗБЕРЕЖЕННЯ ДАНИХ.");
-                        System.out.println("!!! Ваші зміни можуть бути втрачені.");
-                    }
+                    saveData(); // Збереження даних при виході
                     break;
                 default:
                     System.out.println("Невірний пункт меню.");
@@ -56,45 +40,92 @@ public class Main {
     private static void printMenu() {
         System.out.println("\n--- Меню ---");
         System.out.println("1. Додати товар");
-        System.out.println("2. Показати всі товари");
+        System.out.println("2. Показати всі товари (з деталями)");
         System.out.println("3. Видалити товар");
-        System.out.println("4. Оновити товар");
+        System.out.println("4. Оновити товар (базові поля)");
         System.out.println("5. Пошук товару");
         System.out.println("6. Сортувати товари");
-        System.out.println("7. Вихід");
+        System.out.println("7. Зберегти та вийти");
+    }
+
+
+    private static void loadData() {
+        try {
+            List<Product> savedProducts = DataManager.loadData(DATA_FILE);
+            warehouse.loadProducts(savedProducts);
+            System.out.println("Дані успішно завантажено. Товарів на складі: " + savedProducts.size());
+        } catch (IOException e) {
+            System.out.println("!!! Критична помилка завантаження даних.");
+            System.out.println("!!! " + e.getMessage());
+            System.out.println("!!! Роботу буде продовжено з порожнім складом.");
+            warehouse.loadProducts(new ArrayList<>());
+        }
+    }
+
+    private static void saveData() {
+        try {
+            DataManager.saveData(warehouse.getAllProducts(), DATA_FILE);
+            System.out.println("Дані успішно збережено.");
+        } catch (IOException e) {
+            System.out.println("!!! КРИТИЧНА ПОМИЛКА ЗБЕРЕЖЕННЯ ДАНИХ.");
+            System.out.println("!!! " + e.getMessage());
+            System.out.println("!!! Зміни можуть бути втрачені.");
+        }
     }
 
     private static void addNewProduct() {
         System.out.println("\n--- Додавання нового товару ---");
+        System.out.println("Оберіть тип товару:");
+        System.out.println("1. Харчовий продукт");
+        System.out.println("2. Електроніка");
+        System.out.println("3. Одяг");
+        int typeChoice = InputValidator.readInt(scanner, "Ваш вибір: ");
 
-        String id = InputValidator.readNonEmptyString(scanner, "Артикул: ");
-        String name = InputValidator.readNonEmptyString(scanner, "Назва: ");
-        double price = InputValidator.readDouble(scanner, "Ціна: ");
+        try {
+            String id = InputValidator.readNonEmptyString(scanner, "Артикул: ");
+            String name = InputValidator.readNonEmptyString(scanner, "Назва: ");
+            double price = InputValidator.readDouble(scanner, "Ціна: ");
+            int quantity = InputValidator.readInt(scanner, "Кількість: ");
 
-        int quantity;
-        while (true) {
-            quantity = InputValidator.readInt(scanner, "Кількість: ");
-            if (quantity >= 0) break;
-            System.out.println("Кількість не може бути від'ємною.");
-        }
+            Product newProduct = null;
 
-        Product product = new Product(id, name, price, quantity);
 
-        if (warehouse.addProduct(product)) {
+            switch (typeChoice) {
+                case 1:
+                    LocalDate date = InputValidator.readDate(scanner, "Термін придатності (РРРР-ММ-ДД): ");
+                    newProduct = new FoodProduct(id, name, price, quantity, date);
+                    break;
+                case 2:
+                    int warranty = InputValidator.readInt(scanner, "Гарантія (міс.): ");
+                    newProduct = new ElectronicsProduct(id, name, price, quantity, warranty);
+                    break;
+                case 3:
+                    String size = InputValidator.readNonEmptyString(scanner, "Розмір (напр. L, 42, 180cm): ");
+                    String color = InputValidator.readNonEmptyString(scanner, "Колір: ");
+                    newProduct = new ClothingProduct(id, name, price, quantity, size, color);
+                    break;
+                default:
+                    System.out.println("Помилка: Невідомий тип товару.");
+                    return;
+            }
+
+            warehouse.addProduct(newProduct);
             System.out.println("Товар успішно додано!");
-        } else {
-            System.out.println("Помилка: Товар з таким артикулом вже існує.");
+
+        } catch (InvalidDataException | DuplicateProductException e) {
+            System.out.println("!!! Помилка додавання товару: " + e.getMessage());
         }
     }
 
     private static void showAllProducts() {
-        System.out.println("\n--- Всі товари на складі ---");
+        System.out.println("\n--- Всі товари на складі (детально) ---");
         List<Product> products = warehouse.getAllProducts();
         if (products.isEmpty()) {
             System.out.println("Склад порожній.");
         } else {
             for (Product p : products) {
-                System.out.println(p);
+                System.out.println(p.getFullDescription());
+                System.out.println("--------------------");
             }
         }
     }
@@ -103,24 +134,19 @@ public class Main {
         System.out.println("\n--- Видалення товару ---");
         String id = InputValidator.readNonEmptyString(scanner, "Введіть артикул: ");
 
-        Product product = warehouse.findProductById(id);
-        if (product == null) {
-            System.out.println("Помилка: Товар не знайдено.");
-            return;
-        }
+        try {
+            Product product = warehouse.findProductById(id);
+            System.out.println("Вибрано для видалення: " + product.toString());
+            String confirm = InputValidator.readNonEmptyString(scanner, "Ви впевнені? (так/ні): ").toLowerCase();
 
-        System.out.println("Вибрано для видалення: " + product);
-        String confirm = InputValidator.readNonEmptyString(scanner, "Ви впевнені? (так/ні): ").toLowerCase();
-
-        if (confirm.equals("так") || confirm.equals("yes") || confirm.equals("y") || confirm.equals("+")) {
-            boolean removed = warehouse.removeProduct(id);
-            if (removed) {
+            if (confirm.equals("так") || confirm.equals("yes") || confirm.equals("y") || confirm.equals("+")) {
+                warehouse.removeProduct(id);
                 System.out.println("Товар успішно видалено.");
             } else {
-                System.out.println("Помилка: Не вдалося видалити товар.");
+                System.out.println("Видалення скасовано.");
             }
-        } else {
-            System.out.println("Видалення скасовано.");
+        } catch (ProductNotFoundException e) {
+            System.out.println("!!! Помилка: " + e.getMessage());
         }
     }
 
@@ -128,39 +154,47 @@ public class Main {
         System.out.println("\n--- Оновлення товару ---");
         String id = InputValidator.readNonEmptyString(scanner, "Введіть артикул: ");
 
-        Product product = warehouse.findProductById(id);
-        if (product == null) {
-            System.out.println("Товар не знайдено.");
-            return;
+        try {
+            Product product = warehouse.findProductById(id);
+            System.out.println("Поточні дані: " + product);
+            System.out.println("Натисніть Enter, щоб залишити без змін.");
+
+
+            System.out.print("Нова назва [" + product.getName() + "]: ");
+            String newName = scanner.nextLine().trim();
+            if (!newName.isEmpty()) {
+                product.setName(newName);
+            }
+
+            Double newPrice = InputValidator.readOptionalDouble(scanner, "Нова ціна [" + product.getPrice() + "]: ");
+            if (newPrice != null) {
+                product.setPrice(newPrice);
+            }
+
+            Integer newQty = InputValidator.readOptionalInt(scanner, "Нова кількість [" + product.getQuantity() + "]: ");
+            if (newQty != null) {
+                product.setQuantity(newQty);
+            }
+
+            System.out.println("Оновлено: " + product);
+
+        } catch (ProductNotFoundException e) {
+            System.out.println("!!! Помилка: " + e.getMessage());
+        } catch (InvalidDataException e) {
+            System.out.println("!!! Помилка оновлення: " + e.getMessage());
         }
-
-        System.out.println("Поточні дані: " + product);
-        System.out.println("Натисніть Enter, щоб залишити без змін.");
-
-        System.out.print("Нова назва [" + product.getName() + "]: ");
-        String newName = scanner.nextLine().trim();
-        if (!newName.isEmpty()) {
-            product.setName(newName);
-        }
-
-        Double newPrice = InputValidator.readOptionalDouble(scanner, "Нова ціна [" + product.getPrice() + "]: ");
-        if (newPrice != null) {
-            product.setPrice(newPrice);
-        }
-
-        Integer newQty = InputValidator.readOptionalInt(scanner, "Нова кількість [" + product.getQuantity() + "]: ");
-        if (newQty != null) {
-            product.setQuantity(newQty);
-        }
-
-        System.out.println("Оновлено: " + product);
     }
 
     private static void searchProduct() {
+        System.out.println("\n--- Пошук товару ---");
         String query = InputValidator.readNonEmptyString(scanner, "Пошук (артикул/назва): ");
         List<Product> res = warehouse.search(query);
-        if(res.isEmpty()) System.out.println("Нічого не знайдено.");
-        else res.forEach(System.out::println);
+        if(res.isEmpty()) {
+            System.out.println("Нічого не знайдено.");
+        } else {
+            System.out.println("Знайдено " + res.size() + " товар(ів):");
+            res.forEach(System.out::println);
+        }
     }
 
     private static void sortProducts() {
@@ -172,7 +206,7 @@ public class Main {
 
         int criterion = InputValidator.readInt(scanner, "Оберіть критерій: ");
 
-        Comparator<Product> comparator = null; // Cтворюємо змінну для компаратора
+        Comparator<Product> comparator = null;
 
         switch (criterion) {
             case 1:
@@ -192,9 +226,9 @@ public class Main {
                 return;
         }
 
-        // Викликаємо єдиний метод сортування
         List<Product> sorted = warehouse.getSortedProducts(comparator);
 
+        System.out.println("--- Відсортований список ---");
         sorted.forEach(System.out::println);
     }
 }

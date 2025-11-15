@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class InputValidator {
@@ -42,10 +44,19 @@ public class InputValidator {
         }
     }
 
-    /**
-     * Читає ціле число. Якщо введено порожній рядок, повертає null.
-     * Перевіряє, що число не від'ємне.
-     */
+    public static LocalDate readDate(Scanner scanner, String message) {
+        while (true) {
+            System.out.print(message);
+            String input = scanner.nextLine().trim();
+            try {
+                // Очікуємо дату у форматі YYYY-MM-DD
+                return LocalDate.parse(input);
+            } catch (DateTimeParseException e) {
+                System.out.println("Помилка: Введіть дату у форматі РРРР-ММ-ДД (наприклад, 2025-12-31).");
+            }
+        }
+    }
+
     public static Integer readOptionalInt(Scanner scanner, String message) {
         while (true) {
             System.out.print(message);
@@ -66,10 +77,6 @@ public class InputValidator {
         }
     }
 
-    /**
-     * Читає дробове число. Якщо введено порожній рядок, повертає null.
-     * Перевіряє, що число не від'ємне.
-     */
     public static Double readOptionalDouble(Scanner scanner, String message) {
         while (true) {
             System.out.print(message);
