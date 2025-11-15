@@ -123,30 +123,18 @@ public class Main {
 
         System.out.print("Нова назва [" + product.getName() + "]: ");
         String newName = scanner.nextLine().trim();
-        if (!newName.isEmpty()) product.setName(newName);
-
-        System.out.print("Нова ціна [" + product.getPrice() + "]: ");
-        String newPriceStr = scanner.nextLine().trim();
-        if (!newPriceStr.isEmpty()) {
-            try {
-                double newPrice = Double.parseDouble(newPriceStr);
-                if (newPrice >= 0) product.setPrice(newPrice);
-                else System.out.println("Помилка: Ціна не може бути від'ємною. Пропущено.");
-            } catch (NumberFormatException e) {
-                System.out.println("Помилка: Некоректне число. Пропущено.");
-            }
+        if (!newName.isEmpty()) {
+            product.setName(newName);
         }
 
-        System.out.print("Нова кількість [" + product.getQuantity() + "]: ");
-        String newQtyStr = scanner.nextLine().trim();
-        if (!newQtyStr.isEmpty()) {
-            try {
-                int newQty = Integer.parseInt(newQtyStr);
-                if (newQty >= 0) product.setQuantity(newQty);
-                else System.out.println("Помилка: Кількість не може бути від'ємною. Пропущено.");
-            } catch (NumberFormatException e) {
-                System.out.println("Помилка: Некоректне число. Пропущено.");
-            }
+        Double newPrice = InputValidator.readOptionalDouble(scanner, "Нова ціна [" + product.getPrice() + "]: ");
+        if (newPrice != null) {
+            product.setPrice(newPrice);
+        }
+
+        Integer newQty = InputValidator.readOptionalInt(scanner, "Нова кількість [" + product.getQuantity() + "]: ");
+        if (newQty != null) {
+            product.setQuantity(newQty);
         }
 
         System.out.println("Оновлено: " + product);
